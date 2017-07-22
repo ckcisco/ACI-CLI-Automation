@@ -1,0 +1,63 @@
+tenant CLI-Automation
+  description 'Automated with CLI Script'
+  access-list app-db_contract_filter
+    match raw app-db_contract_entry
+    exit
+  access-list web-app_contract_filter
+    match raw web-app_contract_entry
+    exit
+  contract app-db_contract
+    description 'None'
+    scope tenant
+    subject app-db_subject
+      access-group app-db_contract_filter both
+      description 'None'
+      exit
+    exit
+  contract web-app_contract
+    description 'None'
+    scope tenant
+    subject web-app_subject
+      access-group web-app_contract_filter both
+      description 'None'
+      exit
+    exit
+  vrf context vrf_cli
+    description 'None'
+    exit
+  bridge-domain bd_cli_1
+    arp flooding
+    vrf member vrf_cli
+    exit
+  application CLI-Innovation-App
+    description 'None'
+    epg web_epg
+      bridge-domain member bd_cli_1
+      contract consumer CLI-Tenant-External
+      contract provider web-app_contract
+      description 'None'
+      vmware-domain member CLM-vCenter deploy immediate push on-demand
+        exit
+      exit
+    epg app_epg
+      bridge-domain member bd_cli_1
+      contract consumer app-db_contract
+      contract provider web-app_contract
+      description 'None'
+      vmware-domain member CLM-vCenter deploy immediate push on-demand
+        exit
+      exit
+    epg db_epg
+      bridge-domain member bd_cli_1
+      contract consumer app-db_contract
+      contract provider app-db_contract
+      description 'None'
+      vmware-domain member CLM-vCenter deploy immediate push on-demand
+        exit
+      exit
+    exit
+  interface bridge-domain bd_cli_1
+    description 'test'
+    ip address 10.9.91.1/24 secondary
+    exit
+  exit
